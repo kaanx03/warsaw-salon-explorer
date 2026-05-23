@@ -1,0 +1,29 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  flyway:
+    url: jdbc:postgresql://localhost:5432/salon_explorer
+    user: salon_admin
+    password: ${POSTGRES_PASSWORD:change_me_in_production}
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/salon_explorer
+    username: salon_app
+    password: ${APP_DB_PASSWORD:change_me_app_password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: SalonHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+
+logging:
+  level:
+    org.flywaydb: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
