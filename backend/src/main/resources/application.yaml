@@ -19,6 +19,19 @@ spring:
           batch_size: 25
     show-sql: false
 
+resilience4j:
+  retry:
+    instances:
+      googlePlacesApi:
+        max-attempts: 3
+        wait-duration: 1s
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - org.springframework.web.client.ResourceAccessException
+        ignore-exceptions:
+          - org.springframework.web.client.HttpClientErrorException
+
 management:
   endpoints:
     web:

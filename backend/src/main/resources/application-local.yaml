@@ -22,6 +22,27 @@ spring:
       max-lifetime: 1800000
       leak-detection-threshold: 60000
 
+google:
+  places:
+    api-key: ${GOOGLE_MAPS_API_KEY}
+    base-url: https://places.googleapis.com/v1
+    language-code: ${GOOGLE_PLACES_LANGUAGE:pl}
+    region-code: ${GOOGLE_PLACES_REGION:pl}
+    connect-timeout-ms: 5000
+    read-timeout-ms: 15000
+
+ingestion:
+  batch-size: ${INGESTION_BATCH_SIZE:20}
+  rate-limit-per-second: ${INGESTION_RATE_LIMIT_PER_SECOND:10}
+  max-retries: 3
+  retry-backoff-ms: 1000
+  search-queries:
+    - "beauty salon Warsaw"
+    - "hair salon Warsaw"
+    - "barber Warsaw"
+    - "nail salon Warsaw"
+    - "spa Warsaw"
+
 logging:
   level:
     org.flywaydb: INFO
