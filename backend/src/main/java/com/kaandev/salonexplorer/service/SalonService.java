@@ -1,6 +1,7 @@
 package com.kaandev.salonexplorer.service;
 
 import com.kaandev.salonexplorer.domain.dto.PagedResponse;
+import java.util.List;
 import com.kaandev.salonexplorer.domain.dto.SalonDetailDto;
 import com.kaandev.salonexplorer.domain.dto.SalonListItemDto;
 import com.kaandev.salonexplorer.domain.dto.SalonPatchRequest;
@@ -15,7 +16,6 @@ import com.kaandev.salonexplorer.repository.SalonServiceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -35,13 +35,14 @@ public class SalonService {
     private final SalonServiceRepository salonServiceRepository;
     private final SalonMapper mapper;
     private final AuditService auditService;
+    private final PhotoProxyService photoProxyService;
 
     @Transactional(readOnly = true)
     public PagedResponse<SalonListItemDto> list(
         String districtSlug,
         String serviceName,
+        String serviceCategory,
         BigDecimal minRating,
-        Short maxPriceLevel,
         String search,
         Pageable pageable
     ) {
@@ -49,8 +50,8 @@ public class SalonService {
             SalonSpecifications.isActive(),
             SalonSpecifications.hasDistrictSlug(districtSlug),
             SalonSpecifications.hasService(serviceName),
+            SalonSpecifications.hasServiceCategory(serviceCategory),
             SalonSpecifications.minRating(minRating),
-            SalonSpecifications.maxPriceLevel(maxPriceLevel),
             SalonSpecifications.nameContains(search)
         );
 
@@ -60,12 +61,18 @@ public class SalonService {
         return PagedResponse.from(page);
     }
 
-    @Cacheable(value = "salonDetail", key = "#id")
     @Transactional(readOnly = true)
     public SalonDetailDto getById(Long id) {
         Salon salon = salonRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Salon not found: " + id));
         return mapper.toDetail(salon);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getPhotoUrls(Long id) {
+        Salon salon = salonRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Salon not found: " + id));
+        return photoProxyService.fetchPhotoRefs(salon.getGooglePlaceId());
     }
 
     @CacheEvict(value = "salonDetail", key = "#id")

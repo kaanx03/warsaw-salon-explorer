@@ -1,0 +1,2 @@
+ALTER TABLE salons ADD COLUMN IF NOT EXISTS description  TEXT;
+ALTER TABLE salons ADD COLUMN IF NOT EXISTS opening_hours TEXT;

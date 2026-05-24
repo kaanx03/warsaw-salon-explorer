@@ -4,7 +4,9 @@ import com.kaandev.salonexplorer.domain.dto.SalonDetailDto;
 import com.kaandev.salonexplorer.domain.dto.SalonListItemDto;
 import com.kaandev.salonexplorer.domain.dto.SalonPatchRequest;
 import com.kaandev.salonexplorer.domain.dto.SalonUpdateRequest;
+import com.kaandev.salonexplorer.domain.dto.ServiceOfferingDto;
 import com.kaandev.salonexplorer.domain.entity.Salon;
+import com.kaandev.salonexplorer.domain.entity.ServiceOffering;
 import org.mapstruct.*;
 
 import java.net.URLEncoder;
@@ -24,32 +26,40 @@ public interface SalonMapper {
     @Mapping(target = "photoUrl", source = "photoUrl", qualifiedByName = "photoProxy")
     SalonDetailDto toDetail(Salon salon);
 
-    @Mapping(target = "id",            ignore = true)
-    @Mapping(target = "googlePlaceId", ignore = true)
-    @Mapping(target = "createdAt",     ignore = true)
-    @Mapping(target = "updatedAt",     ignore = true)
-    @Mapping(target = "district",      ignore = true)
-    @Mapping(target = "services",      ignore = true)
-    @Mapping(target = "photoUrl",      ignore = true)
-    @Mapping(target = "latitude",      ignore = true)
-    @Mapping(target = "longitude",     ignore = true)
+    ServiceOfferingDto toOfferingDto(ServiceOffering offering);
+
+    @Mapping(target = "id",               ignore = true)
+    @Mapping(target = "googlePlaceId",    ignore = true)
+    @Mapping(target = "createdAt",        ignore = true)
+    @Mapping(target = "updatedAt",        ignore = true)
+    @Mapping(target = "district",         ignore = true)
+    @Mapping(target = "services",         ignore = true)
+    @Mapping(target = "serviceOfferings", ignore = true)
+    @Mapping(target = "photoUrl",         ignore = true)
+    @Mapping(target = "latitude",         ignore = true)
+    @Mapping(target = "longitude",        ignore = true)
+    @Mapping(target = "description",      ignore = true)
+    @Mapping(target = "openingHours",     ignore = true)
     void updateFromRequest(SalonUpdateRequest req, @MappingTarget Salon salon);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "id",            ignore = true)
-    @Mapping(target = "googlePlaceId", ignore = true)
-    @Mapping(target = "createdAt",     ignore = true)
-    @Mapping(target = "updatedAt",     ignore = true)
-    @Mapping(target = "district",      ignore = true)
-    @Mapping(target = "services",      ignore = true)
-    @Mapping(target = "photoUrl",      ignore = true)
-    @Mapping(target = "latitude",      ignore = true)
-    @Mapping(target = "longitude",     ignore = true)
+    @Mapping(target = "id",               ignore = true)
+    @Mapping(target = "googlePlaceId",    ignore = true)
+    @Mapping(target = "createdAt",        ignore = true)
+    @Mapping(target = "updatedAt",        ignore = true)
+    @Mapping(target = "district",         ignore = true)
+    @Mapping(target = "services",         ignore = true)
+    @Mapping(target = "serviceOfferings", ignore = true)
+    @Mapping(target = "photoUrl",         ignore = true)
+    @Mapping(target = "latitude",         ignore = true)
+    @Mapping(target = "longitude",        ignore = true)
+    @Mapping(target = "description",      ignore = true)
+    @Mapping(target = "openingHours",     ignore = true)
     void patchFromRequest(SalonPatchRequest req, @MappingTarget Salon salon);
 
     @Named("photoProxy")
     default String toPhotoProxyUrl(String photoRef) {
         if (photoRef == null) return null;
-        return "/api/v1/photos/" + URLEncoder.encode(photoRef, StandardCharsets.UTF_8);
+        return "/api/v1/photos?ref=" + URLEncoder.encode(photoRef, StandardCharsets.UTF_8);
     }
 }

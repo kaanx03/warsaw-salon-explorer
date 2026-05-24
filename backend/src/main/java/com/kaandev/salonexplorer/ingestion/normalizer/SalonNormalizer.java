@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -36,6 +37,8 @@ public class SalonNormalizer {
             .reviewCount(place.userRatingCount() != null ? place.userRatingCount() : 0)
             .priceLevel(mapPriceLevel(place.priceLevel()))
             .photoUrl(extractFirstPhotoRef(place))
+            .description(extractDescription(place))
+            .openingHours(extractOpeningHours(place))
             .isActive(true)
             .build();
 
@@ -52,7 +55,21 @@ public class SalonNormalizer {
         existing.setReviewCount(place.userRatingCount() != null ? place.userRatingCount() : 0);
         existing.setPriceLevel(mapPriceLevel(place.priceLevel()));
         existing.setPhotoUrl(extractFirstPhotoRef(place));
+        existing.setDescription(extractDescription(place));
+        existing.setOpeningHours(extractOpeningHours(place));
         existing.setDistrict(districtResolver.resolve(place));
+    }
+
+    public void applyEnrichment(Salon existing, PlaceDto detail) {
+        if (detail.editorialSummary() != null) {
+            existing.setDescription(detail.editorialSummary().text());
+        }
+        if (detail.regularOpeningHours() != null) {
+            existing.setOpeningHours(extractOpeningHours(detail));
+        }
+        if (detail.priceLevel() != null) {
+            existing.setPriceLevel(mapPriceLevel(detail.priceLevel()));
+        }
     }
 
     private Short mapPriceLevel(String googleLevel) {
@@ -73,5 +90,17 @@ public class SalonNormalizer {
     private String extractFirstPhotoRef(PlaceDto place) {
         if (place.photos() == null || place.photos().isEmpty()) return null;
         return place.photos().get(0).name();
+    }
+
+    private String extractDescription(PlaceDto place) {
+        if (place.editorialSummary() == null) return null;
+        return place.editorialSummary().text();
+    }
+
+    private String extractOpeningHours(PlaceDto place) {
+        if (place.regularOpeningHours() == null) return null;
+        List<String> days = place.regularOpeningHours().weekdayDescriptions();
+        if (days == null || days.isEmpty()) return null;
+        return String.join("\n", days);
     }
 }

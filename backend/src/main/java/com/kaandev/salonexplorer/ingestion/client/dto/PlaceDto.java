@@ -17,7 +17,9 @@ public record PlaceDto(
     @JsonProperty("internationalPhoneNumber") String internationalPhoneNumber,
     @JsonProperty("websiteUri") String websiteUri,
     List<Photo> photos,
-    List<AddressComponent> addressComponents
+    List<AddressComponent> addressComponents,
+    EditorialSummary editorialSummary,
+    RegularOpeningHours regularOpeningHours
 ) {
     public record DisplayName(String text, String languageCode) {}
     public record Location(Double latitude, Double longitude) {}
@@ -27,4 +29,7 @@ public record PlaceDto(
         String shortText,
         List<String> types
     ) {}
+    public record EditorialSummary(String text, String languageCode) {}
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record RegularOpeningHours(List<String> weekdayDescriptions) {}
 }

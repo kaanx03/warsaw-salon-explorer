@@ -2,7 +2,6 @@ package com.kaandev.salonexplorer.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -24,12 +23,7 @@ public class RedisConfig {
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         var objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .activateDefaultTyping(
-                BasicPolymorphicTypeValidator.builder()
-                    .allowIfBaseType(Object.class).build(),
-                ObjectMapper.DefaultTyping.NON_FINAL
-            );
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         var serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 

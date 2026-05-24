@@ -21,7 +21,11 @@ public class GooglePlacesClient {
         "places.id,places.displayName,places.formattedAddress,places.location," +
         "places.rating,places.userRatingCount,places.priceLevel," +
         "places.internationalPhoneNumber,places.websiteUri,places.photos," +
-        "places.addressComponents,nextPageToken";
+        "places.addressComponents,places.editorialSummary,places.regularOpeningHours," +
+        "nextPageToken";
+
+    private static final String DETAIL_FIELD_MASK =
+        "editorialSummary,regularOpeningHours,priceLevel";
 
     private final RestClient googlePlacesRestClient;
     private final GooglePlacesProperties props;
@@ -42,5 +46,15 @@ public class GooglePlacesClient {
     public List<PlaceDto> searchAllPages(String query) {
         var response = searchText(query);
         return response != null ? response.placesOrEmpty() : List.of();
+    }
+
+    @Retry(name = "googlePlacesApi")
+    public PlaceDto fetchDetail(String placeId) {
+        log.debug("Places Detail fetch: placeId='{}'", placeId);
+        return googlePlacesRestClient.get()
+            .uri("/places/{placeId}", placeId)
+            .header("X-Goog-FieldMask", DETAIL_FIELD_MASK)
+            .retrieve()
+            .body(PlaceDto.class);
     }
 }

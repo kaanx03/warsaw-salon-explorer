@@ -4,6 +4,7 @@ import com.kaandev.salonexplorer.domain.entity.Salon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SalonRepository extends JpaRepository<Salon, Long>, JpaSpecificationExecutor<Salon> {
@@ -13,4 +14,6 @@ public interface SalonRepository extends JpaRepository<Salon, Long>, JpaSpecific
     boolean existsByGooglePlaceId(String googlePlaceId);
 
     long countByIsActiveTrue();
+
+    List<Salon> findAllByIsActiveTrue();
 }

@@ -1,0 +1,1 @@
+ALTER TABLE salons DROP COLUMN IF EXISTS booksy_id;

@@ -1,6 +1,7 @@
 package com.kaandev.salonexplorer.domain.specification;
 
 import com.kaandev.salonexplorer.domain.entity.Salon;
+import com.kaandev.salonexplorer.domain.enums.ServiceCategory;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -17,6 +18,20 @@ public class SalonSpecifications {
     public static Specification<Salon> hasDistrictSlug(String slug) {
         if (slug == null || slug.isBlank()) return null;
         return (root, query, cb) -> cb.equal(root.get("district").get("slug"), slug.toLowerCase());
+    }
+
+    public static Specification<Salon> hasServiceCategory(String category) {
+        if (category == null || category.isBlank()) return null;
+        try {
+            ServiceCategory cat = ServiceCategory.valueOf(category.toUpperCase());
+            return (root, query, cb) -> {
+                query.distinct(true);
+                Join<Object, Object> services = root.join("services");
+                return cb.equal(services.get("category"), cat);
+            };
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public static Specification<Salon> hasService(String serviceName) {

@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/salons")
@@ -32,20 +33,26 @@ public class SalonController {
     @GetMapping
     @Operation(summary = "List salons with pagination and filtering")
     public PagedResponse<SalonListItemDto> list(
-        @Parameter(description = "District slug") @RequestParam(required = false) String district,
-        @Parameter(description = "Service name")  @RequestParam(required = false) String service,
-        @Parameter(description = "Min rating")    @RequestParam(required = false) BigDecimal minRating,
-        @Parameter(description = "Max price 1-4") @RequestParam(required = false) Short maxPriceLevel,
-        @Parameter(description = "Name search")   @RequestParam(required = false) String search,
+        @Parameter(description = "District slug")      @RequestParam(required = false) String district,
+        @Parameter(description = "Service name")       @RequestParam(required = false) String service,
+        @Parameter(description = "Service category")   @RequestParam(required = false) String category,
+        @Parameter(description = "Min rating")         @RequestParam(required = false) BigDecimal minRating,
+        @Parameter(description = "Name search")        @RequestParam(required = false) String search,
         @ParameterObject @PageableDefault(size = 20, sort = "rating") Pageable pageable
     ) {
-        return salonService.list(district, service, minRating, maxPriceLevel, search, pageable);
+        return salonService.list(district, service, category, minRating, search, pageable);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get salon details")
     public SalonDetailDto getById(@PathVariable Long id) {
         return salonService.getById(id);
+    }
+
+    @GetMapping("/{id}/photos")
+    @Operation(summary = "Get all photo URLs for a salon")
+    public List<String> getPhotos(@PathVariable Long id) {
+        return salonService.getPhotoUrls(id);
     }
 
     @PutMapping("/{id}")

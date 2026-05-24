@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private static final int CAPACITY = 100;
+    private static final int CAPACITY = 500;
     private static final Duration REFILL_PERIOD = Duration.ofMinutes(1);
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
