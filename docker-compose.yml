@@ -38,6 +38,39 @@ services:
     networks:
       - salon-network
 
+  backend:
+    build: ./backend
+    container_name: salon-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:-Y2hhbmdlbWVfdGhpc19pc19hX3NhbXBsZV9zZWNyZXRfZm9yX2Rldl9vbmx5XzMyYg==}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - salon-network
+
+  frontend:
+    build: ./frontend
+    container_name: salon-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      BACKEND_URL: http://backend:8080
+    depends_on:
+      - backend
+    networks:
+      - salon-network
+
 volumes:
   postgres_data:
     driver: local

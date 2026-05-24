@@ -1,0 +1,48 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  flyway:
+    url: jdbc:postgresql://postgres:5432/salon_explorer
+    user: salon_admin
+    password: ${POSTGRES_PASSWORD}
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/salon_explorer
+    username: salon_app
+    password: ${APP_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: SalonHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+      timeout: 2000ms
+      connect-timeout: 2000ms
+
+google:
+  places:
+    api-key: ${GOOGLE_MAPS_API_KEY}
+    base-url: https://places.googleapis.com/v1
+    language-code: pl
+    region-code: pl
+    connect-timeout-ms: 5000
+    read-timeout-ms: 15000
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: 3600000
+
+cors:
+  allowed-origins:
+    - http://localhost:3000
+
+logging:
+  level:
+    org.flywaydb: INFO
