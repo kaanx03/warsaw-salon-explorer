@@ -8,6 +8,55 @@ A full-stack directory of beauty salons in Warsaw — built as a take-home proje
 
 ---
 
+## Running the Project
+
+**Prerequisite:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+
+**1. Clone the repo**
+```bash
+git clone https://github.com/mustafakaanyavuz/warsaw-salon-explorer.git
+cd warsaw-salon-explorer
+```
+
+**2. Create the environment file**
+```bash
+cp .env.example .env
+```
+
+Open `.env` and set the following values:
+
+| Variable | What to put |
+|----------|-------------|
+| `POSTGRES_PASSWORD` | Any password, e.g. `MyPassword123` |
+| `APP_DB_PASSWORD` | Any password, e.g. `MyAppPassword123` |
+| `JWT_SECRET` | A random Base64 string — generate one below |
+| `GOOGLE_MAPS_API_KEY` | Your Google Maps API key (needed for salon photos) |
+
+Generate a JWT secret (run one of these):
+```bash
+# macOS / Linux
+openssl rand -base64 32
+
+# Windows PowerShell
+[Convert]::ToBase64String((1..32 | ForEach-Object { [byte](Get-Random -Max 256) }))
+```
+
+**3. Start all services**
+```bash
+docker compose up --build
+```
+
+First run takes ~5 minutes (downloads Java + Node images, compiles the app). Subsequent starts are fast.
+
+**4. Open the app**
+
+- Frontend: http://localhost:3000
+- API docs (Swagger): http://localhost:8080/swagger-ui.html
+
+> The database comes pre-seeded with 408 Warsaw salons. No extra steps needed.
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
