@@ -22,6 +22,13 @@ spring:
       max-lifetime: 1800000
       leak-detection-threshold: 60000
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      connect-timeout: 2000ms
+
 google:
   places:
     api-key: ${GOOGLE_MAPS_API_KEY}
@@ -30,6 +37,16 @@ google:
     region-code: ${GOOGLE_PLACES_REGION:pl}
     connect-timeout-ms: 5000
     read-timeout-ms: 15000
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:Y2hhbmdlbWVfdGhpc19pc19hX3NhbXBsZV9zZWNyZXRfZm9yX2Rldl9vbmx5XzMyYg==}
+    expiration-ms: 3600000
+
+cors:
+  allowed-origins:
+    - http://localhost:3000
+    - http://127.0.0.1:3000
 
 ingestion:
   batch-size: ${INGESTION_BATCH_SIZE:20}
