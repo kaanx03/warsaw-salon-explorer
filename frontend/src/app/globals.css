@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  --bg:          oklch(0.972 0.008 80);
+  --bg-2:        oklch(0.945 0.012 80);
+  --surface:     oklch(0.985 0.006 80);
+  --ink:         oklch(0.18 0.012 60);
+  --ink-2:       oklch(0.34 0.012 60);
+  --muted:       oklch(0.55 0.01 60);
+  --muted-2:     oklch(0.72 0.008 60);
+  --rule:        oklch(0.86 0.012 70);
+  --rule-soft:   oklch(0.92 0.01 70);
+  --accent:      oklch(0.46 0.085 32);
+  --accent-soft: oklch(0.93 0.025 40);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, a, select, input { cursor: pointer; }
+input { cursor: text; }
+
+button {
+  transition: opacity 150ms ease, background 150ms ease, color 150ms ease,
+              border-color 150ms ease, transform 120ms ease, box-shadow 150ms ease;
+}
+
+a { transition: opacity 150ms ease, color 150ms ease; }
+
+button:hover:not(:disabled) { opacity: 0.88; }
+button:active:not(:disabled) { transform: scale(0.97); }
+
+.font-display { font-family: var(--font-instrument), Georgia, serif; }
+.font-body    { font-family: var(--font-dm), system-ui, sans-serif; }
+.font-mono    { font-family: var(--font-jetbrains), ui-monospace, monospace; }
