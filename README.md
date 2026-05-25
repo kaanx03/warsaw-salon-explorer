@@ -2,9 +2,7 @@
 
 A full-stack directory of beauty salons in Warsaw — built as a take-home project for the SumUp Warsaw Accelerator program.
 
-408 salons sourced from Google Places API, searchable by district, service category, and rating.
-
-**Live stack:** Spring Boot 3.5 · Next.js 15 · PostgreSQL 16 · Redis · Docker Compose
+**408 salons · 18 districts · 6 800+ price entries · Edition 01 · 2026**
 
 ---
 
@@ -12,48 +10,35 @@ A full-stack directory of beauty salons in Warsaw — built as a take-home proje
 
 **Prerequisite:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
-**1. Clone the repo**
 ```bash
+# 1. Clone
 git clone https://github.com/mustafakaanyavuz/warsaw-salon-explorer.git
 cd warsaw-salon-explorer
-```
 
-**2. Create the environment file**
-```bash
+# 2. Create env file
 cp .env.example .env
 ```
 
-Open `.env` and set the following values:
+Open `.env` and fill in:
 
-| Variable | What to put |
+| Variable | Description |
 |----------|-------------|
-| `POSTGRES_PASSWORD` | Any password, e.g. `MyPassword123` |
-| `APP_DB_PASSWORD` | Any password, e.g. `MyAppPassword123` |
-| `JWT_SECRET` | A random Base64 string — generate one below |
-| `GOOGLE_MAPS_API_KEY` | Your Google Maps API key (needed for salon photos) |
+| `POSTGRES_PASSWORD` | Any strong password |
+| `APP_DB_PASSWORD` | Any strong password |
+| `JWT_SECRET` | Base64 string — generate with `openssl rand -base64 32` |
+| `GOOGLE_MAPS_API_KEY` | Google Maps API key (needed for salon photos) |
 
-Generate a JWT secret (run one of these):
 ```bash
-# macOS / Linux
-openssl rand -base64 32
-
-# Windows PowerShell
-[Convert]::ToBase64String((1..32 | ForEach-Object { [byte](Get-Random -Max 256) }))
-```
-
-**3. Start all services**
-```bash
+# 3. Start everything
 docker compose up --build
 ```
 
-First run takes ~5 minutes (downloads Java + Node images, compiles the app). Subsequent starts are fast.
+First run takes ~5 minutes (pulls Java + Node images, compiles). Subsequent starts are instant.
 
-**4. Open the app**
+- **App:** http://localhost:3000
+- **API docs:** http://localhost:8080/swagger-ui.html
 
-- Frontend: http://localhost:3000
-- API docs (Swagger): http://localhost:8080/swagger-ui.html
-
-> The database comes pre-seeded with 408 Warsaw salons. No extra steps needed.
+The database comes fully pre-seeded — 408 salons and 6 800+ price entries load automatically via Flyway migrations. No extra steps needed.
 
 ---
 
@@ -62,126 +47,109 @@ First run takes ~5 minutes (downloads Java + Node images, compiles the app). Sub
 | Layer | Technology |
 |-------|-----------|
 | Backend | Java 21, Spring Boot 3.5, Spring Security (JWT), MapStruct |
-| Database | PostgreSQL 16, Flyway migrations |
-| Cache | Redis 7 (salon details, photo refs, district list) |
+| Database | PostgreSQL 16, Flyway migrations (V1–V10) |
+| Cache | Redis 7 |
 | Frontend | Next.js 15 App Router, TypeScript, Tailwind CSS v4, Framer Motion |
 | Infrastructure | Docker Compose (4 services) |
-| API Docs | Swagger UI — `/swagger-ui.html` |
-
----
-
-## Quick Start (Docker)
-
-```bash
-# 1. Copy env template and fill in your Google Maps API key
-cp .env.example .env
-
-# 2. Start all 4 services (postgres, redis, backend, frontend)
-docker compose up --build
-
-# 3. Open the app
-open http://localhost:3000
-```
-
-> First run applies all Flyway migrations automatically. The database starts empty — run ingestion to populate salons (see below).
-
----
-
-## Local Development
-
-**Prerequisites:** Java 21, Node 22, Docker (for postgres + redis)
-
-```bash
-# Start postgres + redis only
-docker compose up -d postgres redis
-
-# Backend (PowerShell)
-cd backend
-$env:SPRING_PROFILES_ACTIVE="local"
-mvn spring-boot:run
-
-# Frontend (separate terminal)
-cd frontend
-npm install
-npm run dev
-```
-
-App runs at `http://localhost:3000`, API at `http://localhost:8080`.
+| API Docs | Swagger UI |
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                   Browser / Client                  │
-└──────────────────────┬──────────────────────────────┘
-                       │ HTTP
-┌──────────────────────▼──────────────────────────────┐
-│              Next.js 15 (port 3000)                 │
-│  Server Components · /api/* → proxy → :8080         │
-└──────────────────────┬──────────────────────────────┘
-                       │ HTTP
-┌──────────────────────▼──────────────────────────────┐
-│           Spring Boot 3.5 (port 8080)               │
-│  JWT Auth · Rate Limiting · Redis Cache             │
-│  Google Places photo proxy                         │
-└──────┬───────────────┬────────────────┬─────────────┘
-       │               │                │
-  ┌────▼────┐    ┌──────▼─────┐   ┌─────▼──────────┐
-  │ Postgres│    │   Redis    │   │ Google Places  │
-  │   :5432 │    │   :6379    │   │    API v1      │
-  └─────────┘    └────────────┘   └────────────────┘
+Browser
+  │
+  ▼
+Next.js 15 :3000   (Server Components, /api/* proxied to backend)
+  │
+  ▼
+Spring Boot :8080  (JWT auth, rate limiting, Redis cache, Google Places photo proxy)
+  │         │         │
+Postgres  Redis  Google Places API
+```
+
+---
+
+## How the Data Was Built
+
+### 1. Salon data — Google Places API
+
+408 salons were fetched using the Google Places (New) API with 35 search queries covering hair, nails, spa, brows, lash, waxing, and more in both Polish and English. A second enrichment pass added descriptions and opening hours.
+
+This is reproducible via the admin API (requires JWT login as `admin@salonexplorer.dev` / `admin123`):
+
+```bash
+# Login and get token
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@salonexplorer.dev","password":"admin123"}'
+
+# Run ingestion
+curl -X POST http://localhost:8080/api/v1/admin/ingest \
+  -H "Authorization: Bearer <token>"
+
+# Enrich with descriptions + opening hours
+curl -X POST http://localhost:8080/api/v1/admin/enrich \
+  -H "Authorization: Bearer <token>"
+```
+
+### 2. Price lists — web scraping
+
+Google Places API does not provide price lists. A Python scraper (`scripts/scrape_prices.py`) visited each salon's website and extracted prices using two strategies:
+
+- **Booksy pages** — scraped service cards directly from the rendered HTML (name, price, duration)
+- **Regular websites** — discovered price pages (`/cennik`, `/cennik-zabiegow`, `/oferta`, etc.) via homepage navigation, then parsed HTML tables, definition lists, and Elementor column layouts
+
+Results (216 salons, 6 812 services) were imported into the `service_offerings` table and committed as `V10__seed_service_offerings.sql` — so they load automatically for anyone running the project.
+
+To re-scrape or update prices:
+
+```bash
+pip install requests beautifulsoup4 psycopg2-binary python-dotenv
+
+python scripts/scrape_prices.py          # scrape all salons → scraped_prices.json
+python scripts/import_prices.py --dry-run  # preview
+python scripts/import_prices.py            # write to DB
 ```
 
 ---
 
 ## API Endpoints
 
-Full interactive docs at `http://localhost:8080/swagger-ui.html`
+Full docs at `http://localhost:8080/swagger-ui.html`
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/v1/salons` | List salons (filter by district, service, category, rating) |
-| GET | `/api/v1/salons/{id}` | Salon detail |
-| GET | `/api/v1/salons/{id}/photos` | All photo URLs for a salon |
-| GET | `/api/v1/districts` | All Warsaw districts |
+| GET | `/api/v1/salons/{id}` | Salon detail with services and price list |
+| GET | `/api/v1/salons/{id}/photos` | Photo URLs for a salon |
+| GET | `/api/v1/districts` | All 18 Warsaw districts |
 | GET | `/api/v1/services` | All service categories |
 | GET | `/api/v1/photos?ref=...` | Google Places photo proxy |
-| POST | `/api/v1/auth/login` | JWT login |
-| POST | `/api/v1/admin/ingest` | Run Google Places ingestion pipeline |
-| POST | `/api/v1/admin/enrich` | Enrich salons with descriptions + opening hours |
-
-Default admin credentials: `admin@salonexplorer.dev` / `admin123`
+| POST | `/api/v1/auth/login` | Get JWT token |
+| POST | `/api/v1/admin/ingest` | Fetch salons from Google Places |
+| POST | `/api/v1/admin/enrich` | Enrich with descriptions + hours |
 
 ---
 
-## Data Ingestion
+## Local Development (without Docker)
 
-Salons are fetched from the Google Places (New) API using 35 search queries covering hair, nails, spa, brows, lash, waxing, and more — both in Polish and English.
+**Prerequisites:** Java 21, Node 22, Docker (for Postgres + Redis only)
 
 ```bash
-# Trigger ingestion via API (requires admin JWT)
-curl -X POST http://localhost:8080/api/v1/admin/ingest \
-  -H "Authorization: Bearer <token>"
+# Start only the databases
+docker compose up -d postgres redis
 
-# Then enrich with descriptions + opening hours
-curl -X POST http://localhost:8080/api/v1/admin/enrich \
-  -H "Authorization: Bearer <token>"
+# Backend
+cd backend
+$env:SPRING_PROFILES_ACTIVE="local"   # PowerShell
+mvn spring-boot:run
+
+# Frontend (separate terminal)
+cd frontend
+npm install && npm run dev
 ```
-
----
-
-## Environment Variables
-
-See `.env.example` for the full list. Required:
-
-| Variable | Description |
-|----------|-------------|
-| `GOOGLE_MAPS_API_KEY` | Google Places API (New) key |
-| `POSTGRES_PASSWORD` | PostgreSQL admin password |
-| `APP_DB_PASSWORD` | Application DB user password |
-| `JWT_SECRET` | Base64-encoded JWT signing secret |
 
 ---
 
@@ -189,20 +157,21 @@ See `.env.example` for the full list. Required:
 
 ```
 .
-├── backend/                 # Spring Boot application
-│   ├── src/main/java/...
+├── backend/src/main/
+│   ├── java/com/kaandev/salonexplorer/
 │   │   ├── controller/      # REST endpoints
-│   │   ├── service/         # Business logic + photo proxy
+│   │   ├── service/         # Business logic, photo proxy
 │   │   ├── ingestion/       # Google Places client + pipeline
-│   │   ├── security/        # JWT filter, rate limiter
+│   │   ├── security/        # JWT, rate limiting
 │   │   └── mapper/          # MapStruct DTO mappers
-│   └── src/main/resources/
-│       └── db/migration/    # Flyway V1–V9
-├── frontend/                # Next.js application
-│   └── src/
-│       ├── app/             # Pages (listing + detail)
-│       └── components/      # UI components
-├── docker/postgres/init/    # DB init scripts
+│   └── resources/db/migration/  # Flyway V1–V10
+├── frontend/src/
+│   ├── app/                 # Pages (listing + salon detail)
+│   └── components/          # UI components
+├── scripts/
+│   ├── scrape_prices.py     # Price list scraper
+│   └── import_prices.py     # DB importer
+├── docker/postgres/init/    # DB user + seed SQL
 ├── docker-compose.yml
 └── .env.example
 ```
