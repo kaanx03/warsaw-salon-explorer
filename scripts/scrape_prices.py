@@ -292,7 +292,6 @@ def scrape_booksy(url: str) -> list[dict]:
         if not name or name in seen or len(name) < 3:
             continue
 
-        # Duration
         duration_min = None
         for t in texts:
             dm = DURATION_RE.match(t)

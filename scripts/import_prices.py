@@ -58,14 +58,12 @@ def import_prices(data: list[dict], dry_run: bool = False):
             skipped += 1
             continue
 
-        # Verify salon exists
         cur.execute("SELECT id FROM salons WHERE id = %s", (salon_id,))
         if not cur.fetchone():
             print(f"  ⚠ Salon {salon_id} not found in DB, skipping")
             skipped += 1
             continue
 
-        # Sanitize services
         rows = []
         for svc in services:
             name = (svc.get("name") or "").strip()[:255]

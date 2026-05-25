@@ -9,7 +9,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT CONNECT ON DATABASE ${POSTGRES_DB} TO ${APP_DB_USER:-salon_app};
     GRANT USAGE ON SCHEMA public TO ${APP_DB_USER:-salon_app};
 
-    -- Flyway'in sonradan olusturacagi tablolara da yetki ver
+    -- Grant privileges on tables Flyway will create later
     ALTER DEFAULT PRIVILEGES IN SCHEMA public
         GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${APP_DB_USER:-salon_app};
     ALTER DEFAULT PRIVILEGES IN SCHEMA public
