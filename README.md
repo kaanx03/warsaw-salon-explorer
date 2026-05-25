@@ -6,6 +6,16 @@ A full-stack directory of beauty salons in Warsaw — built as a take-home proje
 
 ---
 
+## Screenshots
+
+![Home page — salon listing with district and category filters](docs/screenshots/home.png)
+
+![Salon detail page](docs/screenshots/salon-detail.png)
+
+![Price list](docs/screenshots/prices.png)
+
+---
+
 ## Running the Project
 
 **Prerequisite:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
